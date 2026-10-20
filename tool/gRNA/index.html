@@ -171,7 +171,7 @@ button.primary:disabled{background:#21262d;color:#484f58;cursor:not-allowed}
 </div>
 
 <div class="val-note" id="valNote">
-  <strong>Reminder:</strong> PubMed returns literature evidence — check full text and supplementary for actual guide sequences. The Addgene search link opens its catalog; inspect individual plasmid pages for sequence information. Design tools: <a href="https://portals.broadinstitute.org/gppx/crispick/public" target="_blank">CRISPick</a> · <a href="https://chopchop.cbu.uib.no/" target="_blank">CHOPCHOP</a> · <a href="https://cas-offinder.bibc.ac.kr/" target="_blank">Cas-OFFinder</a>
+  <strong>Reminder:</strong> PubMed returns literature evidence — check full text and supplementary for actual guide sequences. The Addgene search link opens its catalog; inspect individual plasmid pages for sequence information. Design tools: <a href="https://portals.broadinstitute.org/gppx/crispick/public" target="_blank">CRISPick</a> · <a href="https://chopchop.cbu.uib.no/" target="_blank">CHOPCHOP</a>
 </div>
 
 <!-- ── UCSC BLAT Viewer ── -->
@@ -344,7 +344,6 @@ function renderResults(gene, species, pubmed) {
   </div>`;
 
   // TIER 3 — GenScript
-  const gsQ = encodeURIComponent(gene + ' grna');
   html += `<div class="tier-section tier-gen">
     <div class="tier-header">
       <span class="tier-badge">Tier 3</span>
@@ -356,7 +355,6 @@ function renderResults(gene, species, pubmed) {
     <div class="source-links">
       <a class="src-btn s-gen" href="https://www.genscript.com/gRNA-database.html" target="_blank">↗ GenScript gRNA Database</a>
       <a class="src-btn s-gen" href="https://www.genscript.com/crispr-grna-design-tool.html" target="_blank">↗ GenScript Design Tool</a>
-      <a class="src-btn s-gen" href="https://www.genscript.com/search.html#q=${gsQ}&t=product" target="_blank">↗ GenScript search: ${gene}</a>
     </div></div></div>`;
 
   // TIER 4 — CRISPick
@@ -372,8 +370,6 @@ function renderResults(gene, species, pubmed) {
       <a class="src-btn s-crp" href="https://portals.broadinstitute.org/gppx/crispick/public" target="_blank">↗ CRISPick (Broad)</a>
       <a class="src-btn s-crp" href="https://chopchop.cbu.uib.no/" target="_blank">↗ CHOPCHOP</a>
       <a class="src-btn s-crp" href="https://crisprscan.org/" target="_blank">↗ CRISPRscan</a>
-      <a class="src-btn s-crp" href="https://cas-offinder.bibc.ac.kr/" target="_blank">↗ Cas-OFFinder</a>
-      <a class="src-btn s-crp" href="https://www.benchling.com" target="_blank">↗ Benchling</a>
     </div></div></div>`;
 
   el.innerHTML = html;
@@ -583,6 +579,11 @@ document.getElementById('geneInput').addEventListener('keydown', e => {
     <div id="primerResults"></div>
   </div>
 </div>
+
+<footer style="max-width:860px;margin:2.5rem auto 0;padding-top:1.25rem;border-top:1px solid #30363d;color:#8b949e;font-size:0.78rem;line-height:1.7;text-align:center">
+  <p>Developed by Su Lab to support the research community in finding and designing guide RNAs. We welcome your comments and suggestions. Please contact Dr. Shang Su at <a href="mailto:ssu5@lsu.edu" style="color:#58a6ff;text-decoration:underline">ssu5@lsu.edu</a>.</p>
+  <p style="margin-top:0.6rem">© 2026 Su Lab. All rights reserved.</p>
+</footer>
 
 </body>
 </html>
