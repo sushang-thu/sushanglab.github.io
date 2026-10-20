@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gRNA Finder v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding:2rem 1.5rem}
+.header{text-align:center;margin-bottom:2rem}
+.header h1{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:600;color:#58a6ff;margin-bottom:0.3rem;letter-spacing:-0.5px}
+.header .sub{font-size:0.75rem;color:#8b949e;letter-spacing:0.4px}
+.pipeline-bar{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:1.8rem;flex-wrap:wrap}
+.ps{font-size:0.68rem;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:4px;font-weight:500}
+.ps.lit{background:#1c3a5e;color:#79c0ff;border:1px solid #1f6feb}
+.ps.add{background:#1c3a2e;color:#7ee787;border:1px solid #238636}
+.ps.gen{background:#3a2c1c;color:#ffa657;border:1px solid #9e6a03}
+.ps.crp{background:#3a1c2e;color:#d2a8ff;border:1px solid #6e40c9}
+.badge-live{font-size:0.6rem;padding:2px 6px;background:#1c3a5e44;color:#58a6ff;border:1px dashed #1f6feb88;border-radius:3px;font-family:'IBM Plex Mono',monospace}
+.pa{color:#484f58;font-size:0.75rem;padding:0 2px}
+.search-row{display:flex;gap:8px;max-width:700px;margin:0 auto 1.2rem;flex-wrap:wrap}
+.search-row input{flex:1;min-width:160px;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-family:'IBM Plex Mono',monospace;font-size:0.9rem;padding:10px 14px;outline:none;transition:border-color 0.2s}
+.search-row input:focus{border-color:#58a6ff}
+.search-row input::placeholder{color:#484f58}
+select{background:#161b22;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;padding:10px 12px;outline:none;cursor:pointer}
+select:focus{border-color:#58a6ff}
+button.primary{background:#1f6feb;border:none;border-radius:6px;color:#fff;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;font-weight:600;padding:10px 18px;transition:background 0.15s;white-space:nowrap}
+button.primary:hover{background:#388bfd}
+button.primary:disabled{background:#21262d;color:#484f58;cursor:not-allowed}
+.status-line{max-width:700px;margin:0 auto 1.2rem;font-size:0.78rem;color:#8b949e;font-family:'IBM Plex Mono',monospace;min-height:1.4em;display:flex;align-items:center;gap:8px}
+.dot-pulse{display:inline-flex;gap:4px}
+.dot-pulse span{width:5px;height:5px;border-radius:50%;background:#58a6ff;animation:pulse 1.2s infinite ease-in-out}
+.dot-pulse span:nth-child(2){animation-delay:0.2s}
+.dot-pulse span:nth-child(3){animation-delay:0.4s}
+@keyframes pulse{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+.results{max-width:860px;margin:0 auto}
+.tier-section{margin-bottom:1.2rem}
+.tier-header{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px 6px 0 0;border-bottom:1px solid}
+.tier-badge{font-size:0.65rem;font-weight:600;letter-spacing:0.5px;padding:2px 7px;border-radius:3px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.tier-title{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;flex:1}
+.tier-sub{font-size:0.68rem;color:#8b949e}
+.tier-body{background:#161b22;border:1px solid #21262d;border-top:none;border-radius:0 0 6px 6px;padding:1rem}
+.tier-note{font-size:0.73rem;color:#8b949e;margin-bottom:10px;line-height:1.6}
+.tier-lit .tier-header{background:#0d1f38;border-color:#1f6feb}
+.tier-lit .tier-badge{background:#1f6feb22;color:#79c0ff}
+.tier-add .tier-header{background:#0d2218;border-color:#238636}
+.tier-add .tier-badge{background:#23863622;color:#7ee787}
+.tier-gen .tier-header{background:#1f1a0d;border-color:#9e6a03}
+.tier-gen .tier-badge{background:#9e6a0322;color:#ffa657}
+.tier-crp .tier-header{background:#1a0d26;border-color:#6e40c9}
+.tier-crp .tier-badge{background:#6e40c922;color:#d2a8ff}
+.paper-card{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:10px 14px;margin-bottom:7px;transition:border-color 0.15s}
+.paper-card:hover{border-color:#30363d}
+.paper-card:last-child{margin-bottom:0}
+.paper-title{font-size:0.82rem;color:#e6edf3;line-height:1.5;margin-bottom:6px}
+.paper-meta{font-size:0.7rem;color:#8b949e;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.paper-meta a{color:#58a6ff;text-decoration:none}
+.paper-meta a:hover{text-decoration:underline}
+.chip{background:#21262d;border-radius:3px;padding:2px 7px;color:#8b949e;font-family:'IBM Plex Mono',monospace;font-size:0.68rem}
+.chip.blue{color:#79c0ff;background:#1c3a5e}
+.addgene-card{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:10px 14px;margin-bottom:7px;transition:border-color 0.15s}
+.addgene-card:hover{border-color:#238636}
+.addgene-card:last-child{margin-bottom:0}
+.addgene-name{font-size:0.82rem;color:#e6edf3;margin-bottom:6px;font-family:'IBM Plex Mono',monospace}
+.addgene-meta{font-size:0.7rem;color:#8b949e;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.addgene-meta a{color:#7ee787;text-decoration:none}
+.addgene-meta a:hover{text-decoration:underline}
+.source-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.src-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;padding:5px 10px;border-radius:4px;text-decoration:none;border:1px solid;transition:opacity 0.15s}
+.src-btn:hover{opacity:0.7}
+.src-btn.s-lit{color:#79c0ff;border-color:#1f6feb44;background:#1f6feb11}
+.src-btn.s-add{color:#7ee787;border-color:#23863644;background:#23863611}
+.src-btn.s-gen{color:#ffa657;border-color:#9e6a0344;background:#9e6a0311}
+.src-btn.s-crp{color:#d2a8ff;border-color:#6e40c944;background:#6e40c911}
+.empty-state{text-align:center;padding:3rem 1rem;color:#484f58;font-size:0.85rem}
+.empty-icon{font-size:2rem;margin-bottom:0.75rem}
+.error-box{background:#3a1c1c;border:1px solid #a32d2d;border-radius:6px;padding:10px 14px;font-size:0.8rem;color:#ff7b72}
+.val-note{background:#1f1a0d;border:1px solid #9e6a0333;border-radius:6px;padding:8px 12px;font-size:0.72rem;color:#8b949e;margin-top:1.5rem;max-width:860px;margin-left:auto;margin-right:auto;display:none}
+.val-note strong{color:#ffa657}
+.val-note a{color:#ffa657}
+.no-results{font-size:0.78rem;color:#484f58;padding:4px 0}
+.copy-btn{background:none;border:1px solid #30363d;border-radius:3px;color:#8b949e;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.62rem;padding:2px 6px;transition:all 0.15s}
+.copy-btn:hover{background:#21262d;color:#e6edf3}
+
+/* ── Validate panel ── */
+.validate-panel{max-width:860px;margin:2rem auto 0;border:1px solid #30363d;border-radius:8px;overflow:hidden}
+.validate-panel-header{background:#161b22;padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;border-bottom:1px solid #21262d}
+.validate-panel-header:hover{background:#1c2128}
+.vp-title{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;font-weight:500;flex:1}
+.vp-badge{font-size:0.65rem;font-weight:600;padding:2px 8px;border-radius:3px;background:#1a2a1a;color:#7ee787;border:1px solid #23863644;font-family:'IBM Plex Mono',monospace;letter-spacing:0.4px}
+.vp-toggle{font-size:0.75rem;color:#484f58;transition:transform 0.2s}
+.vp-toggle.open{transform:rotate(180deg)}
+.validate-body{background:#0d1117;padding:1rem 1.2rem;display:none}
+.validate-body.open{display:block}
+.validate-input-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.validate-input-row input{flex:1;min-width:220px;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#58a6ff;font-family:'IBM Plex Mono',monospace;font-size:0.9rem;padding:9px 13px;outline:none;letter-spacing:1px;transition:border-color 0.2s}
+.validate-input-row input:focus{border-color:#58a6ff}
+.validate-input-row input::placeholder{color:#484f58;letter-spacing:0}
+.validate-hint{font-size:0.7rem;color:#484f58;margin-bottom:12px;font-family:'IBM Plex Mono',monospace}
+.blat-status{font-size:0.75rem;color:#8b949e;font-family:'IBM Plex Mono',monospace;min-height:1.2em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.blat-results{margin-bottom:14px}
+.hit-row{background:#161b22;border:1px solid #21262d;border-radius:6px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
+.hit-row:last-child{margin-bottom:0}
+.hit-rank{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#484f58;min-width:18px;padding-top:2px}
+.hit-info{flex:1}
+.hit-desc{font-size:0.78rem;color:#e6edf3;margin-bottom:4px;line-height:1.4}
+.hit-meta{font-size:0.68rem;color:#8b949e;display:flex;flex-wrap:wrap;gap:8px}
+.hit-score{font-family:'IBM Plex Mono',monospace}
+.hit-good{border-color:#238636}
+.hit-warn{border-color:#9e6a03}
+.hit-bad{border-color:#a32d2d}
+.hit-badge{font-size:0.62rem;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.hit-badge.good{background:#1c3a2e;color:#7ee787}
+.hit-badge.warn{background:#3a2c1c;color:#ffa657}
+.hit-badge.bad{background:#3a1c1c;color:#ff7b72}
+.offtarget-links{border-top:1px solid #21262d;padding-top:12px;margin-top:4px}
+.offtarget-label{font-size:0.7rem;color:#8b949e;margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
+.seq-error{font-size:0.75rem;color:#ff7b72;margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
+
+
+/* ── Primer designer ── */
+.primer-block{background:#161b22;border:1px solid #21262d;border-radius:7px;margin-bottom:8px;overflow:hidden}
+.primer-block-header{display:flex;align-items:center;gap:10px;padding:8px 13px;border-bottom:1px solid #21262d;background:#0d1117;flex-wrap:wrap}
+.primer-sgRNA-id{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;color:#e6edf3;flex:1}
+.primer-body{padding:10px 13px;display:flex;flex-direction:column;gap:8px}
+.primer-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.primer-label{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#8b949e;min-width:160px}
+.primer-seq{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;letter-spacing:1px;flex:1}
+.p-prefix{color:#484f58}
+.p-spacer{color:#58a6ff}
+.p-rc{color:#d2a8ff}
+.p-suffix{color:#484f58}
+</style>
+</head>
+<body>
+
+<div style="max-width:860px;margin:0 auto 1rem"><a href="/" style="color:#8b949e;font-size:0.8rem;text-decoration:none">← Su Lab home</a></div>
+<div class="header">
+  <h1>// gRNA Search Tool</h1>
+  <div class="sub">guide RNA research toolkit · live PubMed + database links · v2</div>
+</div>
+
+<div class="pipeline-bar">
+  <span class="ps lit">PubMed</span><span class="badge-live">LIVE</span>
+  <span class="pa">→</span>
+  <span class="ps add">Addgene</span><span class="badge-live">SEARCH LINK</span>
+  <span class="pa">→</span>
+  <span class="ps gen">GenScript</span>
+  <span class="pa">→</span>
+  <span class="ps crp">CRISPick</span>
+</div>
+
+<div class="search-row">
+  <input type="text" id="geneInput" placeholder="Gene symbol, e.g. AR, TP53, FOXA1 ..." />
+  <select id="speciesSelect">
+    <option value="human">Human</option>
+    <option value="mouse">Mouse</option>
+    <option value="both">Human + Mouse</option>
+  </select>
+  <button class="primary" id="searchBtn" onclick="runSearch()">Search</button>
+</div>
+
+<div class="status-line" id="statusLine"></div>
+
+<div class="results" id="results">
+  <div class="empty-state">
+    <div class="empty-icon">⬡</div>
+    <div>Enter a gene symbol to search PubMed and open relevant database searches</div>
+  </div>
+</div>
+
+<div class="val-note" id="valNote">
+  <strong>Reminder:</strong> PubMed returns literature evidence — check full text and supplementary for actual guide sequences. The Addgene search link opens its catalog; inspect individual plasmid pages for sequence information. Design tools: <a href="https://portals.broadinstitute.org/gppx/crispick/public" target="_blank">CRISPick</a> · <a href="https://chopchop.cbu.uib.no/" target="_blank">CHOPCHOP</a> · <a href="https://cas-offinder.bibc.ac.kr/" target="_blank">Cas-OFFinder</a>
+</div>
+
+<!-- ── UCSC BLAT Viewer ── -->
+<div class="validate-panel" id="validatePanel">
+  <div class="validate-panel-header" onclick="toggleValidate()">
+    <span class="vp-title">// UCSC BLAT viewer</span>
+    <span class="vp-badge">single or batch · named tracks</span>
+    <span class="vp-toggle" id="vpToggle">▼</span>
+  </div>
+  <div class="validate-body" id="validateBody">
+    <div class="validate-hint">One or multiple sgRNAs · paste as <strong style="color:#e6edf3">ID[tab]sequence</strong> (one per line) or just a bare sequence for single · spacer only, no PAM</div>
+    <div style="margin-bottom:8px">
+      <textarea id="seqInput" rows="5" placeholder="hNR2F1_g1P&#9;CCAGTACGCACTCACCAACG&#10;hNR2F1_g2P&#9;CGAGCTGTTCGTGCTCAACG&#10;&#10;or just a single sequence:&#10;CCAGTACGCACTCACCAACG"
+        style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#58a6ff;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;padding:10px 13px;outline:none;letter-spacing:1px;resize:vertical;line-height:1.6"
+        oninput="previewFasta()"></textarea>
+    </div>
+    <div class="validate-input-row" style="margin-bottom:10px">
+      <select id="blatGenome">
+        <option value="hg38">Human (hg38)</option>
+        <option value="mm39">Mouse (mm39)</option>
+        <option value="mm10">Mouse (mm10)</option>
+      </select>
+      <button class="primary" id="validateBtn" onclick="runBlat()">Open in UCSC BLAT</button>
+    </div>
+    <div id="blatPreview"></div>
+    <div id="blatStatus"></div>
+  </div>
+</div>
+
+<script>
+const PUBMED_BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
+
+async function searchPubMed(gene, species) {
+  // Species filter: MeSH is human-curated and more reliable than tiab for organism
+  const speciesTerm = species === 'mouse'
+    ? '"Mice"[MeSH] OR "Mus musculus"[tiab]'
+    : species === 'human'
+    ? '"Humans"[MeSH] OR "Homo sapiens"[tiab]'
+    : null; // both: no species restriction
+
+  // Broaden CRISPR terms — many papers don't mention gRNA/guide RNA in abstract
+  const crisprTerm = '("CRISPR"[tiab] OR "CRISPR-Cas9"[tiab] OR "CRISPR/Cas9"[tiab] OR "Cas9"[tiab] OR "knockout"[tiab] OR "knock-out"[tiab])';
+
+  const parts = [`${gene}[tiab]`, crisprTerm];
+  if (speciesTerm) parts.push(`(${speciesTerm})`);
+  const query = parts.join(' AND ');
+
+  const searchResp = await fetch(
+    `${PUBMED_BASE}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(query)}&retmax=8&sort=relevance&retmode=json`
+  );
+  const searchData = await searchResp.json();
+  const pmids = searchData.esearchresult?.idlist || [];
+  if (!pmids.length) return [];
+
+  const summaryResp = await fetch(
+    `${PUBMED_BASE}/esummary.fcgi?db=pubmed&id=${pmids.join(',')}&retmode=json`
+  );
+  const summaryData = await summaryResp.json();
+  const result = summaryData.result;
+
+  return pmids.map(id => {
+    const art = result[id];
+    if (!art) return null;
+    const authors = art.authors?.slice(0, 3).map(a => a.name).join(', ') || '';
+    const trailAuthor = art.authors?.length > 3 ? ' et al.' : '';
+    return {
+      pmid: id,
+      title: art.title?.replace(/<[^>]+>/g, '') || '',
+      authors: authors + trailAuthor,
+      journal: art.fulljournalname || art.source || '',
+      year: art.pubdate?.slice(0, 4) || '',
+      doi: art.elocationid?.replace('doi: ', '') || ''
+    };
+  }).filter(Boolean);
+}
+
+async function runSearch() {
+  const gene = document.getElementById('geneInput').value.trim().toUpperCase();
+  const species = document.getElementById('speciesSelect').value;
+  if (!gene) return;
+
+  const btn = document.getElementById('searchBtn');
+  const statusEl = document.getElementById('statusLine');
+  const resultsEl = document.getElementById('results');
+  const valNote = document.getElementById('valNote');
+
+  btn.disabled = true;
+  valNote.style.display = 'none';
+  resultsEl.innerHTML = '';
+
+  function setStatus(msg) {
+    statusEl.innerHTML = `<div class="dot-pulse"><span></span><span></span><span></span></div> ${msg}`;
+  }
+
+  setStatus('Searching PubMed ...');
+
+  let pubmedResults = [];
+  try {
+    pubmedResults = await searchPubMed(gene, species).catch(() => []);
+  } catch(err) {
+    btn.disabled = false;
+    statusEl.innerHTML = '';
+    resultsEl.innerHTML = `<div class="error-box">Error: ${err.message}</div>`;
+    return;
+  }
+
+  statusEl.innerHTML = `<span style="color:#7ee787">✓</span> <strong style="color:#e6edf3">${gene}</strong> — ${pubmedResults.length} PubMed articles · Addgene search link ready`;
+  renderResults(gene, species, pubmedResults);
+  valNote.style.display = 'block';
+  btn.disabled = false;
+}
+
+function renderResults(gene, species, pubmed) {
+  const el = document.getElementById('results');
+  const speciesLabel = species === 'both' ? 'human / mouse' : species;
+  let html = '';
+
+  // TIER 1 — PubMed
+  const speciesMesh = species === 'human' ? ' AND "Humans"[MeSH]'
+                    : species === 'mouse'  ? ' AND "Mice"[MeSH]'
+                    : '';
+  const pubmedQ = encodeURIComponent(`${gene}[tiab] AND (CRISPR[tiab] OR "CRISPR-Cas9"[tiab] OR knockout[tiab])${speciesMesh}`);
+  const scholarQ = encodeURIComponent(`${gene} CRISPR knockout ${species === 'mouse' ? 'mouse' : species === 'human' ? 'human' : ''}`.trim());
+  html += `<div class="tier-section tier-lit">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 1</span>
+      <span class="tier-title">PubMed — live search results</span>
+      <span class="tier-sub">${pubmed.length} articles · ${speciesLabel}</span>
+    </div>
+    <div class="tier-body">
+    <div class="tier-note">Papers reporting CRISPR / gRNA work on <strong style="color:#e6edf3">${gene}</strong>. Check full text and supplementary tables for guide sequences — they are rarely in abstracts.</div>`;
+
+  if (pubmed.length) {
+    pubmed.forEach(p => {
+      html += `<div class="paper-card">
+        <div class="paper-title">${p.title}</div>
+        <div class="paper-meta">
+          ${p.authors ? `<span>${p.authors}</span>` : ''}
+          ${p.journal ? `<span class="chip">${p.journal}</span>` : ''}
+          ${p.year ? `<span class="chip blue">${p.year}</span>` : ''}
+          <a href="https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/" target="_blank">PMID: ${p.pmid} ↗</a>
+          ${p.doi ? `<a href="https://doi.org/${p.doi}" target="_blank" style="color:#8b949e;font-size:0.68rem">DOI ↗</a>` : ''}
+        </div>
+      </div>`;
+    });
+  } else {
+    html += `<div class="no-results">No results from E-utilities. Try the direct search link below.</div>`;
+  }
+
+  html += `<div class="source-links">
+    <a class="src-btn s-lit" href="https://pubmed.ncbi.nlm.nih.gov/?term=${pubmedQ}&sort=relevance" target="_blank">↗ Full PubMed search</a>
+    <a class="src-btn s-lit" href="https://scholar.google.com/scholar?q=${scholarQ}" target="_blank">↗ Google Scholar</a>
+  </div></div></div>`;
+
+  // TIER 2 — Addgene catalog search link
+  const addgeneSearchUrl = `https://www.addgene.org/search/catalog/plasmids/?q=${encodeURIComponent(gene + ' crispr grna')}`;
+  html += `<div class="tier-section tier-add">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 2</span>
+      <span class="tier-title">Addgene — deposited CRISPR plasmids</span>
+      <span class="tier-sub">search on Addgene</span>
+    </div>
+    <div class="tier-body">
+      <div class="tier-note">Search Addgene for plasmids targeting <strong style="color:#e6edf3">${gene}</strong>. Results open on Addgene; check each plasmid page for species, guide sequence, and vector details.</div>
+      <div class="source-links">
+        <a class="src-btn s-add" href="${addgeneSearchUrl}" target="_blank">↗ Search Addgene</a>
+        <a class="src-btn s-add" href="https://www.addgene.org/crispr/guide/" target="_blank">↗ Addgene CRISPR Guide</a>
+      </div>
+    </div>
+  </div>`;
+
+  // TIER 3 — GenScript
+  const gsQ = encodeURIComponent(gene + ' grna');
+  html += `<div class="tier-section tier-gen">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 3</span>
+      <span class="tier-title">GenScript CRISPR gRNA library</span>
+      <span class="tier-sub">catalog pre-designed sequences</span>
+    </div>
+    <div class="tier-body">
+    <div class="tier-note">GenScript's catalog gRNA sequences are pre-designed but require experimental confirmation in your model system.</div>
+    <div class="source-links">
+      <a class="src-btn s-gen" href="https://www.genscript.com/gRNA-database.html" target="_blank">↗ GenScript gRNA Database</a>
+      <a class="src-btn s-gen" href="https://www.genscript.com/crispr-grna-design-tool.html" target="_blank">↗ GenScript Design Tool</a>
+      <a class="src-btn s-gen" href="https://www.genscript.com/search.html#q=${gsQ}&t=product" target="_blank">↗ GenScript search: ${gene}</a>
+    </div></div></div>`;
+
+  // TIER 4 — CRISPick
+  html += `<div class="tier-section tier-crp">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 4</span>
+      <span class="tier-title">CRISPick — computational design</span>
+      <span class="tier-sub">in silico only · requires experimental validation</span>
+    </div>
+    <div class="tier-body">
+    <div class="tier-note" style="color:#ffa65799">Run your gene through CRISPick (Rule Set 3, Doench lab) for ranked predictions. Cross-check off-target profiles before ordering.</div>
+    <div class="source-links">
+      <a class="src-btn s-crp" href="https://portals.broadinstitute.org/gppx/crispick/public" target="_blank">↗ CRISPick (Broad)</a>
+      <a class="src-btn s-crp" href="https://chopchop.cbu.uib.no/" target="_blank">↗ CHOPCHOP</a>
+      <a class="src-btn s-crp" href="https://crisprscan.org/" target="_blank">↗ CRISPRscan</a>
+      <a class="src-btn s-crp" href="https://cas-offinder.bibc.ac.kr/" target="_blank">↗ Cas-OFFinder</a>
+      <a class="src-btn s-crp" href="https://www.benchling.com" target="_blank">↗ Benchling</a>
+    </div></div></div>`;
+
+  el.innerHTML = html;
+}
+
+function copySeq(seq, btn) {
+  navigator.clipboard.writeText(seq).then(() => {
+    btn.textContent = 'copied!';
+    btn.style.color = '#7ee787';
+    btn.style.borderColor = '#238636';
+    setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; btn.style.borderColor = ''; }, 1500);
+  });
+}
+
+// ── UCSC BLAT viewer ────────────────────────────────────────────────────────
+function toggleValidate() {
+  const body = document.getElementById('validateBody');
+  const toggle = document.getElementById('vpToggle');
+  const open = body.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+
+function parseInput() {
+  const raw = document.getElementById('seqInput').value.trim();
+  if (!raw) return [];
+  const lines = raw.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const entries = [];
+  lines.forEach((line, i) => {
+    // Skip FASTA headers if user pasted FASTA
+    if (line.startsWith('>')) return;
+    // Tab-separated: ID\tSEQ
+    const tabParts = line.split(/\t/);
+    if (tabParts.length >= 2) {
+      const id = tabParts[0].trim().replace(/[^A-Za-z0-9_\-]/g, '_');
+      const seq = tabParts[1].trim().toUpperCase().replace(/[^ACGT]/g, '');
+      if (seq.length >= 17 && seq.length <= 23) entries.push({ id, seq });
+    } else {
+      // Bare sequence
+      const seq = line.toUpperCase().replace(/[^ACGT]/g, '');
+      if (seq.length >= 17 && seq.length <= 23) {
+        entries.push({ id: `sgRNA_${i+1}`, seq });
+      }
+    }
+  });
+  return entries;
+}
+
+function previewFasta() {
+  const entries = parseInput();
+  const previewEl = document.getElementById('blatPreview');
+  if (!entries.length) { previewEl.innerHTML = ''; return; }
+
+  let html = `<div style="margin-bottom:10px">
+    <div style="font-size:0.68rem;color:#484f58;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">${entries.length} sequence${entries.length>1?'s':''} parsed · will open as named UCSC tracks</div>`;
+
+  entries.forEach(e => {
+    const lenOk = e.seq.length >= 17 && e.seq.length <= 23;
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:0.75rem">
+      <span style="color:#8b949e;min-width:160px;overflow:hidden;text-overflow:ellipsis">${e.id}</span>
+      <span style="color:#58a6ff;letter-spacing:1px">${e.seq}</span>
+      <span style="font-size:0.65rem;color:${lenOk?'#7ee787':'#ff7b72'}">${e.seq.length}nt</span>
+    </div>`;
+  });
+  html += '</div>';
+  previewEl.innerHTML = html;
+}
+
+function runBlat() {
+  const entries = parseInput();
+  const genome = document.getElementById('blatGenome').value;
+  const statusEl = document.getElementById('blatStatus');
+
+  if (!entries.length) {
+    statusEl.innerHTML = '<div class="seq-error">No valid sequences found. Check format: ID[tab]sequence or bare 17-23nt sequence.</div>';
+    return;
+  }
+
+  const invalid = entries.filter(e => e.seq.length < 17 || e.seq.length > 23);
+  if (invalid.length) {
+    statusEl.innerHTML = `<div class="seq-error">${invalid.length} sequence(s) out of range (need 17–23 nt): ${invalid.map(e=>e.id).join(', ')}</div>`;
+    return;
+  }
+
+  // Build FASTA string — UCSC uses ID as track name
+  const fasta = entries.map(e => `>${e.id}\n${e.seq}`).join('\n');
+
+  // UCSC BLAT URL with FASTA in userSeq param
+  const url = `https://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=${encodeURIComponent(fasta)}&type=DNA&db=${genome}&output=hyperlink`;
+
+  statusEl.innerHTML = `<span style="color:#7ee787">✓</span> Opening UCSC BLAT with ${entries.length} sequence${entries.length>1?'s':''} in ${genome} ...`;
+  window.open(url, '_blank');
+}
+
+
+
+// ── Oligo designer ───────────────────────────────────────────────────────────
+function togglePrimer() {
+  const body = document.getElementById('primerBody');
+  const toggle = document.getElementById('primerToggle');
+  const open = body.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+
+function rc(seq) {
+  const comp = {A:'T',T:'A',G:'C',C:'G'};
+  return seq.split('').reverse().map(b => comp[b] || b).join('');
+}
+
+function parsePrimerInput() {
+  const raw = document.getElementById('primerInput').value.trim();
+  if (!raw) return [];
+  return raw.split(/\n/).map(l => l.trim()).filter(l => l && !l.startsWith('>'))
+    .map((line, i) => {
+      const parts = line.split(/	/);
+      if (parts.length >= 2) {
+        const id = parts[0].trim();
+        const seq = parts[1].trim().toUpperCase().replace(/[^ACGT]/g, '');
+        return seq.length >= 17 && seq.length <= 23 ? { id, seq } : null;
+      }
+      const seq = line.toUpperCase().replace(/[^ACGT]/g, '');
+      return seq.length >= 17 && seq.length <= 23 ? { id: `sgRNA_${i+1}`, seq } : null;
+    }).filter(Boolean);
+}
+
+function designOligos(id, seq) {
+  const seqRC = rc(seq);
+  return {
+    fwd_name: id + '_F',
+    rev_name: id + '_R',
+    fwd: 'CACCG' + seq,
+    rev: 'AAAC' + seqRC + 'C',
+    seqRC
+  };
+}
+
+function runPrimerDesign() {
+  const entries = parsePrimerInput();
+  const el = document.getElementById('primerResults');
+  if (!entries.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = entries.map(({ id, seq }) => {
+    const { fwd_name, rev_name, fwd, rev, seqRC } = designOligos(id, seq);
+    return `<div class="primer-block">
+      <div class="primer-block-header">
+        <span class="primer-sgRNA-id">${id}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#58a6ff;letter-spacing:1px">${seq}</span>
+      </div>
+      <div class="primer-body">
+        <div class="primer-row">
+          <span class="primer-label">${fwd_name}</span>
+          <span class="primer-seq"><span class="p-prefix">CACCG</span><span class="p-spacer">${seq}</span></span>
+          <button class="copy-btn" onclick="copySeq('${fwd}',this)">copy</button>
+        </div>
+        <div class="primer-row">
+          <span class="primer-label">${rev_name}</span>
+          <span class="primer-seq"><span class="p-prefix">AAAC</span><span class="p-rc">${seqRC}</span><span class="p-suffix">C</span></span>
+          <button class="copy-btn" onclick="copySeq('${rev}',this)">copy</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copyAllOligos() {
+  const entries = parsePrimerInput();
+  if (!entries.length) return;
+  const text = entries.map(({ id, seq }) => {
+    const { fwd_name, rev_name, fwd, rev } = designOligos(id, seq);
+    return fwd_name + '\t' + fwd + '\n' + rev_name + '\t' + rev;
+  }).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('[onclick="copyAllOligos()"]');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = '#238636';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+    }
+  });
+}
+
+document.getElementById('geneInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+
+</script>
+
+
+<!-- ── Oligo Designer ── -->
+<div class="validate-panel" id="primerPanel">
+  <div class="validate-panel-header" onclick="togglePrimer()">
+    <span class="vp-title">// oligo designer</span>
+    <span class="vp-badge" style="background:#1a1a2a;color:#79c0ff;border:1px solid #1f6feb44">lentiCRISPRv2 · BsmBI cloning</span>
+    <span class="vp-toggle" id="primerToggle">▼</span>
+  </div>
+  <div class="validate-body" id="primerBody">
+    <div class="validate-hint">Paste as <strong style="color:#e6edf3">ID[tab]sequence</strong> · spacer only, no PAM · F: CACCG+spacer · R: AAAC+RC(spacer)+C</div>
+    <div style="margin-bottom:8px">
+      <textarea id="primerInput" rows="5"
+        placeholder="hNR2F1_g1P&#9;CCAGTACGCACTCACCAACG&#10;hNR2F1_g2P&#9;CGAGCTGTTCGTGCTCAACG"
+        style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#58a6ff;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;padding:10px 13px;outline:none;letter-spacing:1px;resize:vertical;line-height:1.6"
+        oninput="runPrimerDesign()"></textarea>
+    </div>
+    <div style="margin-bottom:12px">
+      <button class="primary" onclick="copyAllOligos()">Copy all as table</button>
+    </div>
+    <div id="primerResults"></div>
+  </div>
+</div>
+
+</body>
+</html>
