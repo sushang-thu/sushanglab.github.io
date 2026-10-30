@@ -1,0 +1,181 @@
+{
+  "S": {
+    "schemaVersion": 4.1,
+    "taskSchema": 1,
+    "nextTask": 4,
+    "activeTab": "g0",
+    "tabs": [
+      {
+        "id": "g0",
+        "name": "Lab overview",
+        "tasks": [
+          {
+            "id": 1,
+            "name": "Imaging analysis",
+            "originTab": "g1",
+            "color": "#378ADD",
+            "wkStart": "2026-11-02",
+            "wkEnd": "2026-11-11",
+            "cells": {
+              "2026-11-02": {
+                "label": "Review image quality",
+                "priority": false,
+                "done": false
+              },
+              "2026-11-04": {
+                "label": "Complete quantification\nBring plots to the 1v1 meeting",
+                "priority": true,
+                "done": false
+              },
+              "2026-11-06": {
+                "label": "Revise figure and share draft",
+                "priority": false,
+                "done": false
+              }
+            }
+          },
+          {
+            "id": 2,
+            "name": "Sample preparation",
+            "originTab": "g2",
+            "color": "#1D9E75",
+            "wkStart": "2026-11-02",
+            "cells": {
+              "2026-11-03": {
+                "label": "Confirm sample labels and worksheet",
+                "priority": true,
+                "done": false
+              },
+              "2026-11-05": {
+                "label": "Prepare samples",
+                "priority": false,
+                "done": false
+              },
+              "2026-11-09": {
+                "label": "Review results and record next steps",
+                "priority": false,
+                "done": false
+              }
+            }
+          },
+          {
+            "id": 3,
+            "name": "Lab coordination",
+            "originTab": "g0",
+            "color": "#7F77DD",
+            "cells": {
+              "2026-11-02": {
+                "label": "Check shared equipment schedule",
+                "priority": false,
+                "done": true
+              },
+              "2026-11-10": {
+                "label": "Review progress and agree on next actions",
+                "priority": true,
+                "done": false
+              }
+            }
+          }
+        ],
+        "viewStart": "2026-11-02",
+        "viewDays": 10,
+        "dailyLayout": "auto",
+        "hideEmpty": false,
+        "nxt": 1
+      },
+      {
+        "id": "g1",
+        "name": "Researcher A",
+        "tasks": [
+          {
+            "id": 1,
+            "name": "Imaging analysis",
+            "originTab": "g1",
+            "color": "#378ADD",
+            "wkStart": "2026-11-02",
+            "wkEnd": "2026-11-11",
+            "cells": {
+              "2026-11-02": {
+                "label": "Review image quality",
+                "priority": false,
+                "done": false
+              },
+              "2026-11-04": {
+                "label": "Complete quantification\nBring plots to the 1v1 meeting",
+                "priority": true,
+                "done": false
+              },
+              "2026-11-06": {
+                "label": "Revise figure and share draft",
+                "priority": false,
+                "done": false
+              }
+            }
+          }
+        ],
+        "viewStart": "2026-11-02",
+        "viewDays": 10,
+        "dailyLayout": "auto",
+        "hideEmpty": false,
+        "nxt": 1
+      },
+      {
+        "id": "g2",
+        "name": "Researcher B",
+        "tasks": [
+          {
+            "id": 2,
+            "name": "Sample preparation",
+            "originTab": "g2",
+            "color": "#1D9E75",
+            "wkStart": "2026-11-02",
+            "cells": {
+              "2026-11-03": {
+                "label": "Confirm sample labels and worksheet",
+                "priority": true,
+                "done": false
+              },
+              "2026-11-05": {
+                "label": "Prepare samples",
+                "priority": false,
+                "done": false
+              },
+              "2026-11-09": {
+                "label": "Review results and record next steps",
+                "priority": false,
+                "done": false
+              }
+            }
+          }
+        ],
+        "viewStart": "2026-11-02",
+        "viewDays": 10,
+        "dailyLayout": "auto",
+        "hideEmpty": false,
+        "nxt": 1
+      }
+    ],
+    "nxtTab": 3,
+    "dlTypes": [
+      {
+        "id": "review",
+        "label": "Review / manuscript",
+        "badge": "b-green"
+      }
+    ],
+    "dls": [
+      {
+        "id": 1,
+        "name": "Example figure review",
+        "date": "2026-11-10",
+        "type": "review"
+      }
+    ],
+    "nxtDl": 2,
+    "projects": [],
+    "nxtProj": 1
+  },
+  "H": [],
+  "template": true,
+  "templateBase": "2026-11-02"
+}
